@@ -1,165 +1,14 @@
-"index.html"
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
+<title>Tap to Jump</title>
 
-    <title>Tap to Jump</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Telegram Mini App SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-
-<body>
-
-    <main class="app">
-
-        <!-- Header -->
-        <header class="topbar">
-            <div class="profile">
-                <div id="avatar" class="avatar">?</div>
-
-                <div>
-                    <div id="username" class="username">
-                        Player
-                    </div>
-
-                    <div class="player-label">
-                        Tap to Jump
-                    </div>
-                </div>
-            </div>
-
-            <button id="soundButton" class="icon-button">
-                🔊
-            </button>
-        </header>
-
-
-        <!-- Score -->
-        <section class="score-area">
-            <div class="score-label">
-                SCORE
-            </div>
-
-            <div id="score" class="score">
-                0
-            </div>
-
-            <div class="best-score">
-                BEST:
-                <span id="bestScore">0</span>
-            </div>
-        </section>
-
-
-        <!-- Game -->
-        <section id="gameContainer" class="game-container">
-
-            <canvas id="gameCanvas"></canvas>
-
-            <!-- Start Screen -->
-            <div id="startScreen" class="overlay">
-
-                <div class="game-icon">
-                    🐸
-                </div>
-
-                <h1>Tap to Jump</h1>
-
-                <p>
-                    Tap anywhere to jump over the obstacles.
-                </p>
-
-                <button id="startButton" class="primary-button">
-                    PLAY
-                </button>
-
-            </div>
-
-
-            <!-- Game Over Screen -->
-            <div id="gameOverScreen" class="overlay hidden">
-
-                <div class="game-over-icon">
-                    💥
-                </div>
-
-                <h2>Game Over</h2>
-
-                <div class="final-score-label">
-                    YOUR SCORE
-                </div>
-
-                <div id="finalScore" class="final-score">
-                    0
-                </div>
-
-                <div class="best-result">
-                    BEST:
-                    <span id="finalBestScore">0</span>
-                </div>
-
-                <button id="restartButton" class="primary-button">
-                    PLAY AGAIN
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- Bottom Info -->
-        <section class="bottom-panel">
-
-            <div class="stat-box">
-                <span class="stat-icon">🏆</span>
-
-                <div>
-                    <div class="stat-title">
-                        BEST SCORE
-                    </div>
-
-                    <div id="bottomBestScore" class="stat-value">
-                        0
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="stat-box">
-                <span class="stat-icon">👆</span>
-
-                <div>
-                    <div class="stat-title">
-                        CONTROL
-                    </div>
-
-                    <div class="stat-value">
-                        TAP
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-    <script src="game.js"></script>
-
-</body>
-</html>
-
-"style.css"
-
+<style>
 * {
     box-sizing: border-box;
     margin: 0;
@@ -172,452 +21,357 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: #10131c;
+    font-family: Arial, sans-serif;
+    touch-action: none;
+    user-select: none;
 }
 
-body {
-    font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
+#game {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(
+        to bottom,
+        #57c7ff 0%,
+        #a8e7ff 70%,
+        #d9f7ff 100%
+    );
+}
 
-    background: #0d1117;
+/* Top UI */
+
+#topBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 20;
     color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.35);
+}
 
-    user-select: none;
-    touch-action: manipulation;
+.scoreBox {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.bestBox {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Clouds */
+
+.cloud {
+    position: absolute;
+    width: 100px;
+    height: 35px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 30px;
+    opacity: 0.8;
+}
+
+.cloud::before,
+.cloud::after {
+    content: "";
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 45px;
+    height: 45px;
+    left: 15px;
+    bottom: 5px;
+}
+
+.cloud::after {
+    width: 55px;
+    height: 55px;
+    right: 12px;
+    bottom: 3px;
+}
+
+.cloud1 {
+    top: 18%;
+    left: 10%;
+}
+
+.cloud2 {
+    top: 30%;
+    right: -20px;
+    transform: scale(0.8);
+}
+
+.cloud3 {
+    top: 10%;
+    right: 25%;
+    transform: scale(0.6);
+}
+
+/* Game Area */
+
+#gameArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Player */
+
+#player {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    left: 70px;
+    bottom: 120px;
+    z-index: 10;
+    background: #ffcc00;
+    border: 4px solid #d99400;
+    border-radius: 50%;
+    box-shadow: 0 5px 0 #b87900;
+}
+
+#player::before {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: #222;
+    border-radius: 50%;
+    top: 10px;
+    left: 9px;
+    box-shadow: 15px 0 #222;
+}
+
+#player::after {
+    content: "";
+    position: absolute;
+    width: 17px;
+    height: 7px;
+    border-bottom: 3px solid #222;
+    border-radius: 50%;
+    bottom: 7px;
+    left: 8px;
+}
+
+/* Ground */
+
+#ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: #52b848;
+    border-top: 8px solid #3d922f;
+    z-index: 5;
+}
+
+#ground::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 15px;
+    top: 15px;
+    left: 0;
+    background: repeating-linear-gradient(
+        90deg,
+        #459f38 0px,
+        #459f38 35px,
+        #55b847 35px,
+        #55b847 70px
+    );
+}
+
+/* Obstacles */
+
+.obstacle {
+    position: absolute;
+    bottom: 100px;
+    width: 45px;
+    background: #e74c3c;
+    border: 4px solid #b72f24;
+    border-radius: 8px 8px 0 0;
+    z-index: 6;
+}
+
+/* Start Screen */
+
+.screen {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 25px;
+    text-align: center;
+    background: rgba(10, 15, 30, 0.82);
+    color: white;
+}
+
+.screen h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.screen p {
+    font-size: 17px;
+    margin-bottom: 25px;
+    opacity: 0.9;
 }
 
 button {
-    font-family: inherit;
-}
-
-.app {
-    width: 100%;
-    max-width: 520px;
-    height: 100dvh;
-    margin: 0 auto;
-
-    display: flex;
-    flex-direction: column;
-
-    background:
-        linear-gradient(
-            180deg,
-            #101722 0%,
-            #0d1117 100%
-        );
-
-    overflow: hidden;
-}
-
-
-/* =========================
-   TOP BAR
-========================= */
-
-.topbar {
-    height: 70px;
-    flex-shrink: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 12px 18px;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.profile {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-}
-
-.avatar {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 50%;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: #2aabee;
-
-    color: white;
-
-    font-size: 18px;
-    font-weight: 700;
-
-    overflow: hidden;
-}
-
-.avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.username {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.player-label {
-    margin-top: 2px;
-
-    font-size: 11px;
-    color: #8994a3;
-}
-
-.icon-button {
-    width: 42px;
-    height: 42px;
-
     border: none;
-    border-radius: 50%;
-
-    background: rgba(255, 255, 255, 0.07);
-
-    color: white;
-
+    padding: 16px 45px;
+    border-radius: 30px;
     font-size: 18px;
-
+    font-weight: bold;
+    background: #ffcc00;
+    color: #222;
+    box-shadow: 0 5px 0 #b87900;
     cursor: pointer;
 }
 
-
-/* =========================
-   SCORE
-========================= */
-
-.score-area {
-    flex-shrink: 0;
-
-    text-align: center;
-
-    padding: 9px 0 7px;
-}
-
-.score-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 2px;
-
-    color: #7f8a99;
-}
-
-.score {
-    margin-top: -2px;
-
-    font-size: 36px;
-    line-height: 40px;
-
-    font-weight: 800;
-}
-
-.best-score {
-    font-size: 11px;
-    color: #7f8a99;
-}
-
-.best-score span {
-    color: #b7c0cc;
-    font-weight: 700;
-}
-
-
-/* =========================
-   GAME
-========================= */
-
-.game-container {
-    position: relative;
-
-    flex: 1;
-
-    min-height: 0;
-
-    margin: 0 12px;
-
-    border-radius: 20px;
-
-    overflow: hidden;
-
-    background: #65c8e8;
-
-    box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.3);
-
-    touch-action: none;
-}
-
-canvas {
-    display: block;
-
-    width: 100%;
-    height: 100%;
-}
-
-
-/* =========================
-   OVERLAYS
-========================= */
-
-.overlay {
-    position: absolute;
-
-    inset: 0;
-
-    z-index: 10;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    padding: 30px;
-
-    background:
-        rgba(8, 14, 22, 0.45);
-
-    backdrop-filter: blur(5px);
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #b87900;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
-.game-icon,
-.game-over-icon {
-    font-size: 64px;
+/* Game Over */
 
-    margin-bottom: 12px;
+#gameOver h1 {
+    color: #ffcc00;
 }
 
-.overlay h1 {
-    font-size: 31px;
-
-    font-weight: 900;
-
+.finalScore {
+    font-size: 24px;
+    font-weight: bold;
     margin-bottom: 8px;
 }
 
-.overlay h2 {
-    font-size: 29px;
-
-    font-weight: 900;
-
-    margin-bottom: 8px;
-}
-
-.overlay p {
-    max-width: 280px;
-
-    color: #d3dae2;
-
-    font-size: 14px;
-    line-height: 21px;
-
-    margin-bottom: 24px;
-}
-
-
-/* =========================
-   BUTTON
-========================= */
-
-.primary-button {
-    min-width: 180px;
-
-    padding: 15px 28px;
-
-    border: none;
-    border-radius: 14px;
-
-    background: #2aabee;
-
-    color: white;
-
-    font-size: 16px;
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 7px 20px rgba(42, 171, 238, 0.3);
-
-    transition:
-        transform 0.1s,
-        opacity 0.1s;
-}
-
-.primary-button:active {
-    transform: scale(0.95);
-    opacity: 0.85;
-}
-
-
-/* =========================
-   GAME OVER
-========================= */
-
-.final-score-label {
-    margin-top: 8px;
-
-    color: #8e99a8;
-
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-}
-
-.final-score {
-    font-size: 48px;
-    font-weight: 900;
-
-    margin-top: 2px;
-}
-
-.best-result {
-    color: #8e99a8;
-
-    font-size: 12px;
-
+.bestScore {
+    font-size: 18px;
     margin-bottom: 25px;
 }
 
-.best-result span {
+/* Tap Hint */
+
+#tapHint {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 15;
     color: white;
-    font-weight: 700;
+    font-weight: bold;
+    font-size: 18px;
+    text-shadow: 0 2px 4px black;
+    pointer-events: none;
+    animation: pulse 1.2s infinite;
 }
 
-
-/* =========================
-   BOTTOM PANEL
-========================= */
-
-.bottom-panel {
-    flex-shrink: 0;
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 10px;
-
-    padding: 12px;
-}
-
-.stat-box {
-    display: flex;
-    align-items: center;
-
-    gap: 10px;
-
-    padding: 11px 13px;
-
-    border-radius: 14px;
-
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.stat-icon {
-    font-size: 21px;
-}
-
-.stat-title {
-    color: #7e8998;
-
-    font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 0.5px;
-}
-
-.stat-value {
-    margin-top: 2px;
-
-    font-size: 13px;
-
-    font-weight: 800;
-}
-
-
-/* =========================
-   SMALL SCREENS
-========================= */
-
-@media (max-height: 650px) {
-
-    .topbar {
-        height: 58px;
-        padding: 8px 15px;
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.4;
+        transform: translateX(-50%) scale(1);
     }
 
-    .avatar {
-        width: 36px;
-        height: 36px;
-    }
-
-    .score {
-        font-size: 30px;
-        line-height: 32px;
-    }
-
-    .score-area {
-        padding: 5px 0;
-    }
-
-    .bottom-panel {
-        padding: 8px;
-    }
-
-    .game-icon,
-    .game-over-icon {
-        font-size: 48px;
-    }
-
-    .overlay h1 {
-        font-size: 26px;
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1.08);
     }
 }
+</style>
+</head>
 
-"game.js"
+<body>
 
-"use strict";
+<div id="game">
 
-/*
-    TAP TO JUMP
-    Telegram Mini App Game
+    <div id="topBar">
+        <div class="scoreBox">
+            Score: <span id="score">0</span>
+        </div>
 
-    Features:
-    - Touch controls
-    - Keyboard controls
-    - Random obstacles
-    - Collision detection
-    - Score
-    - Best score
-    - Telegram user integration
-    - Telegram fullscreen support
-    - Sound toggle
-*/
+        <div class="bestBox">
+            Best: <span id="best">0</span>
+        </div>
+    </div>
 
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
 
-/* =========================
-   TELEGRAM
-========================= */
+    <div id="gameArea">
+
+        <div id="player"></div>
+
+        <div id="tapHint">
+            TAP TO JUMP
+        </div>
+
+        <div id="ground"></div>
+
+    </div>
+
+    <!-- Start Screen -->
+
+    <div id="startScreen" class="screen">
+
+        <h1>Tap to Jump</h1>
+
+        <p>
+            Tap anywhere to jump.<br>
+            Avoid the obstacles and get the highest score.
+        </p>
+
+        <button id="startButton">
+            PLAY
+        </button>
+
+    </div>
+
+    <!-- Game Over Screen -->
+
+    <div id="gameOver" class="screen hidden">
+
+        <h1>GAME OVER</h1>
+
+        <div class="finalScore">
+            Score: <span id="finalScore">0</span>
+        </div>
+
+        <div class="bestScore">
+            Best: <span id="finalBest">0</span>
+        </div>
+
+        <button id="restartButton">
+            PLAY AGAIN
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+/* Telegram Mini App */
 
 const tg = window.Telegram?.WebApp;
 
@@ -625,380 +379,96 @@ if (tg) {
     tg.ready();
     tg.expand();
 
-    // Try to enable fullscreen where Telegram supports it
-    try {
-        if (tg.requestFullscreen) {
-            tg.requestFullscreen();
-        }
-    } catch (error) {
-        console.log("Fullscreen unavailable");
-    }
+    // Optional Telegram theme support
+    document.body.style.backgroundColor =
+        tg.themeParams?.bg_color || "#10131c";
 }
 
 
-/* =========================
-   DOM
-========================= */
+/* Game Elements */
 
-const canvas = document.getElementById("gameCanvas");
+const game = document.getElementById("game");
+const gameArea = document.getElementById("gameArea");
+const player = document.getElementById("player");
 
-const ctx = canvas.getContext("2d");
+const scoreElement = document.getElementById("score");
+const bestElement = document.getElementById("best");
 
-const gameContainer =
-    document.getElementById("gameContainer");
+const finalScoreElement = document.getElementById("finalScore");
+const finalBestElement = document.getElementById("finalBest");
 
-const startScreen =
-    document.getElementById("startScreen");
+const startScreen = document.getElementById("startScreen");
+const gameOverScreen = document.getElementById("gameOver");
 
-const gameOverScreen =
-    document.getElementById("gameOverScreen");
+const startButton = document.getElementById("startButton");
+const restartButton = document.getElementById("restartButton");
 
-const startButton =
-    document.getElementById("startButton");
-
-const restartButton =
-    document.getElementById("restartButton");
-
-const scoreElement =
-    document.getElementById("score");
-
-const bestScoreElement =
-    document.getElementById("bestScore");
-
-const bottomBestScoreElement =
-    document.getElementById("bottomBestScore");
-
-const finalScoreElement =
-    document.getElementById("finalScore");
-
-const finalBestScoreElement =
-    document.getElementById("finalBestScore");
-
-const usernameElement =
-    document.getElementById("username");
-
-const avatarElement =
-    document.getElementById("avatar");
-
-const soundButton =
-    document.getElementById("soundButton");
+const tapHint = document.getElementById("tapHint");
 
 
-/* =========================
-   GAME STATE
-========================= */
-
-let gameWidth = 0;
-let gameHeight = 0;
-
-let animationId = null;
-
-let lastTime = 0;
+/* Game Variables */
 
 let gameRunning = false;
 
-let gameStarted = false;
+let playerX = 70;
+let playerY = 0;
+
+let velocityY = 0;
+
+let gravity = 0.65;
+let jumpPower = -12;
 
 let score = 0;
 
 let bestScore =
     Number(localStorage.getItem("tapJumpBest")) || 0;
 
-let soundEnabled =
-    localStorage.getItem("tapJumpSound") !== "false";
-
-
-/* =========================
-   PLAYER
-========================= */
-
-const player = {
-
-    x: 0,
-
-    y: 0,
-
-    width: 42,
-
-    height: 42,
-
-    velocityY: 0,
-
-    gravity: 0.55,
-
-    jumpPower: -10.5,
-
-    rotation: 0
-
-};
-
-
-/* =========================
-   WORLD
-========================= */
-
-let groundY = 0;
-
 let obstacles = [];
+
+let lastTime = 0;
 
 let obstacleTimer = 0;
 
 let obstacleInterval = 1500;
 
-let gameSpeed = 4;
-
-let distanceSinceScore = 0;
+let gameSpeed = 5;
 
 
-/* =========================
-   SOUND
-========================= */
+/* Update Best Score */
 
-let audioContext = null;
+bestElement.textContent = bestScore;
 
-function playSound(
-    frequency,
-    duration,
-    type = "sine"
-) {
 
-    if (!soundEnabled) {
-        return;
-    }
+/* Get Ground Height */
 
-    try {
+function getGroundHeight() {
 
-        if (!audioContext) {
-            audioContext =
-                new (
-                    window.AudioContext ||
-                    window.webkitAudioContext
-                )();
-        }
+    return 100;
 
-        const oscillator =
-            audioContext.createOscillator();
-
-        const gain =
-            audioContext.createGain();
-
-        oscillator.type = type;
-
-        oscillator.frequency.value =
-            frequency;
-
-        gain.gain.setValueAtTime(
-            0.08,
-            audioContext.currentTime
-        );
-
-        gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            audioContext.currentTime + duration
-        );
-
-        oscillator.connect(gain);
-
-        gain.connect(audioContext.destination);
-
-        oscillator.start();
-
-        oscillator.stop(
-            audioContext.currentTime + duration
-        );
-
-    } catch (error) {
-        console.log("Audio unavailable");
-    }
 }
 
 
-/* =========================
-   TELEGRAM USER
-========================= */
+/* Reset Player */
 
-function loadTelegramUser() {
+function resetPlayer() {
 
-    if (!tg || !tg.initDataUnsafe) {
-        return;
-    }
+    playerX = 70;
 
-    const user =
-        tg.initDataUnsafe.user;
+    playerY =
+        game.clientHeight -
+        getGroundHeight() -
+        player.offsetHeight;
 
-    if (!user) {
-        return;
-    }
+    velocityY = 0;
 
-    let displayName =
-        user.first_name || "Player";
+    player.style.left = playerX + "px";
 
-    if (user.last_name) {
-        displayName +=
-            " " + user.last_name;
-    }
+    player.style.top = playerY + "px";
 
-    usernameElement.textContent =
-        displayName;
-
-    if (user.photo_url) {
-
-        avatarElement.innerHTML =
-            `<img src="${user.photo_url}" alt="Avatar">`;
-
-    } else {
-
-        avatarElement.textContent =
-            displayName.charAt(0).toUpperCase();
-
-    }
 }
 
 
-/* =========================
-   BEST SCORE
-========================= */
-
-function updateBestScoreUI() {
-
-    bestScoreElement.textContent =
-        bestScore;
-
-    bottomBestScoreElement.textContent =
-        bestScore;
-
-    finalBestScoreElement.textContent =
-        bestScore;
-}
-
-
-/* =========================
-   CANVAS RESIZE
-========================= */
-
-function resizeCanvas() {
-
-    const rect =
-        gameContainer.getBoundingClientRect();
-
-    const dpr =
-        Math.min(window.devicePixelRatio || 1, 2);
-
-    gameWidth =
-        rect.width;
-
-    gameHeight =
-        rect.height;
-
-    canvas.width =
-        gameWidth * dpr;
-
-    canvas.height =
-        gameHeight * dpr;
-
-    canvas.style.width =
-        gameWidth + "px";
-
-    canvas.style.height =
-        gameHeight + "px";
-
-    ctx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
-    );
-
-    groundY =
-        gameHeight - 55;
-
-    if (!gameRunning) {
-
-        player.x =
-            gameWidth * 0.22;
-
-        player.y =
-            groundY - player.height;
-
-    }
-}
-
-
-/* =========================
-   RESET GAME
-========================= */
-
-function resetGame() {
-
-    score = 0;
-
-    scoreElement.textContent =
-        "0";
-
-    obstacles = [];
-
-    obstacleTimer = 0;
-
-    obstacleInterval = 1500;
-
-    gameSpeed = 4;
-
-    distanceSinceScore = 0;
-
-    player.x =
-        gameWidth * 0.22;
-
-    player.y =
-        groundY - player.height;
-
-    player.velocityY =
-        0;
-
-    player.rotation =
-        0;
-}
-
-
-/* =========================
-   START GAME
-========================= */
-
-function startGame() {
-
-    resetGame();
-
-    startScreen.classList.add("hidden");
-
-    gameOverScreen.classList.add("hidden");
-
-    gameRunning = true;
-
-    gameStarted = true;
-
-    lastTime =
-        performance.now();
-
-    playSound(
-        500,
-        0.12
-    );
-
-    cancelAnimationFrame(
-        animationId
-    );
-
-    animationId =
-        requestAnimationFrame(
-            gameLoop
-        );
-}
-
-
-/* =========================
-   JUMP
-========================= */
+/* Jump */
 
 function jump() {
 
@@ -1006,117 +476,91 @@ function jump() {
         return;
     }
 
-    player.velocityY =
-        player.jumpPower;
+    velocityY = jumpPower;
 
-    playSound(
-        450,
-        0.08
-    );
 }
 
 
-/* =========================
-   CREATE OBSTACLE
-========================= */
+/* Create Obstacle */
 
 function createObstacle() {
 
-    const width =
-        30 + Math.random() * 25;
+    const obstacle =
+        document.createElement("div");
+
+    obstacle.className = "obstacle";
 
     const height =
-        35 + Math.random() * 45;
+        Math.floor(
+            Math.random() * 50
+        ) + 45;
 
-    obstacles.push({
+    obstacle.style.height =
+        height + "px";
 
-        x:
-            gameWidth + width,
+    obstacle.style.left =
+        game.clientWidth + "px";
 
-        y:
-            groundY - height,
+    obstacle.dataset.x =
+        game.clientWidth;
 
-        width:
-            width,
+    obstacles.push(obstacle);
 
-        height:
-            height,
+    gameArea.appendChild(obstacle);
 
-        passed:
-            false
-
-    });
 }
 
 
-/* =========================
-   COLLISION
-========================= */
+/* Remove Obstacles */
 
-function checkCollision(
-    a,
-    b
+function clearObstacles() {
+
+    obstacles.forEach(
+        obstacle => obstacle.remove()
+    );
+
+    obstacles = [];
+
+}
+
+
+/* Collision Detection */
+
+function collision(
+    playerRect,
+    obstacleRect
 ) {
 
-    const padding = 7;
+    return !(
+        playerRect.right <
+        obstacleRect.left ||
 
-    return (
+        playerRect.left >
+        obstacleRect.right ||
 
-        a.x + padding <
-        b.x + b.width - padding
+        playerRect.bottom <
+        obstacleRect.top ||
 
-        &&
-
-        a.x + a.width - padding >
-        b.x + padding
-
-        &&
-
-        a.y + padding <
-        b.y + b.height
-
-        &&
-
-        a.y + a.height >
-        b.y + padding
-
+        playerRect.top >
+        obstacleRect.bottom
     );
+
 }
 
 
-/* =========================
-   GAME OVER
-========================= */
+/* End Game */
 
 function endGame() {
 
     gameRunning = false;
 
-    cancelAnimationFrame(
-        animationId
-    );
-
     if (score > bestScore) {
 
-        bestScore =
-            score;
+        bestScore = score;
 
         localStorage.setItem(
             "tapJumpBest",
             bestScore
-        );
-
-        playSound(
-            800,
-            0.2
-        );
-
-    } else {
-
-        playSound(
-            150,
-            0.25,
-            "square"
         );
 
     }
@@ -1124,66 +568,123 @@ function endGame() {
     finalScoreElement.textContent =
         score;
 
-    updateBestScoreUI();
+    finalBestElement.textContent =
+        bestScore;
+
+    bestElement.textContent =
+        bestScore;
 
     gameOverScreen.classList.remove(
         "hidden"
     );
 
-    /*
-        Future Telegram leaderboard request
-        can be sent here.
-
-        Example:
-
-        tg.sendData(JSON.stringify({
-            score: score
-        }));
-
-        Your backend should validate
-        the score before storing it.
-    */
 }
 
 
-/* =========================
-   UPDATE GAME
-========================= */
+/* Start Game */
 
-function update(delta) {
+function startGame() {
+
+    startScreen.classList.add(
+        "hidden"
+    );
+
+    gameOverScreen.classList.add(
+        "hidden"
+    );
+
+    clearObstacles();
+
+    score = 0;
+
+    scoreElement.textContent =
+        score;
+
+    obstacleTimer = 0;
+
+    gameSpeed = 5;
+
+    obstacleInterval = 1500;
+
+    resetPlayer();
+
+    gameRunning = true;
+
+    tapHint.classList.remove(
+        "hidden"
+    );
+
+    setTimeout(() => {
+
+        tapHint.classList.add(
+            "hidden"
+        );
+
+    }, 2500);
+
+    lastTime =
+        performance.now();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* Game Loop */
+
+function gameLoop(timestamp) {
+
+    if (!gameRunning) {
+        return;
+    }
+
+    const delta =
+        timestamp - lastTime;
+
+    lastTime =
+        timestamp;
+
 
     /*
-        PLAYER PHYSICS
+    Player Physics
     */
 
-    player.velocityY +=
-        player.gravity *
-        delta;
+    velocityY +=
+        gravity;
 
-    player.y +=
-        player.velocityY *
-        delta;
+    playerY +=
+        velocityY;
 
-    if (
-        player.y + player.height >=
-        groundY
-    ) {
 
-        player.y =
-            groundY - player.height;
+    const groundY =
+        game.clientHeight -
+        getGroundHeight() -
+        player.offsetHeight;
 
-        player.velocityY =
-            0;
+
+    if (playerY >= groundY) {
+
+        playerY =
+            groundY;
+
+        velocityY = 0;
 
     }
 
 
+    player.style.top =
+        playerY + "px";
+
+
     /*
-        OBSTACLE SPAWNING
+    Create Obstacles
     */
 
     obstacleTimer +=
-        delta * 16.67;
+        delta;
+
 
     if (
         obstacleTimer >=
@@ -1192,141 +693,236 @@ function update(delta) {
 
         createObstacle();
 
-        obstacleTimer =
-            0;
+        obstacleTimer = 0;
 
-        obstacleInterval =
-            1200 +
-            Math.random() * 800;
+        /*
+        Gradually increase difficulty
+        */
+
+        if (
+            obstacleInterval > 850
+        ) {
+
+            obstacleInterval -= 15;
+
+        }
+
+        if (
+            gameSpeed < 11
+        ) {
+
+            gameSpeed += 0.05;
+
+        }
 
     }
 
 
     /*
-        MOVE OBSTACLES
+    Move Obstacles
     */
 
-    for (
-        let i = obstacles.length - 1;
-        i >= 0;
-        i--
-    ) {
-
-        const obstacle =
-            obstacles[i];
-
-        obstacle.x -=
-            gameSpeed *
-            delta;
+    const playerRect =
+        player.getBoundingClientRect();
 
 
-        /*
-            SCORE
-        */
+    obstacles.forEach(
+        obstacle => {
 
-        if (
-            !obstacle.passed &&
-            obstacle.x +
-            obstacle.width <
-            player.x
-        ) {
+            let x =
+                Number(
+                    obstacle.dataset.x
+                );
 
-            obstacle.passed =
-                true;
+            x -=
+                gameSpeed *
+                (delta / 16.67);
 
-            score++;
+            obstacle.dataset.x =
+                x;
 
-            scoreElement.textContent =
-                score;
-
-            playSound(
-                700,
-                0.05
-            );
+            obstacle.style.left =
+                x + "px";
 
 
             /*
-                Increase difficulty
+            Collision
+            */
+
+            const obstacleRect =
+                obstacle.getBoundingClientRect();
+
+
+            if (
+                collision(
+                    playerRect,
+                    obstacleRect
+                )
+            ) {
+
+                endGame();
+
+            }
+
+
+            /*
+            Score
             */
 
             if (
-                score % 5 ===
-                0
+                x +
+                obstacle.offsetWidth <
+                playerX &&
+                !obstacle.dataset.scored
             ) {
 
-                gameSpeed +=
-                    0.3;
+                obstacle.dataset.scored =
+                    "true";
+
+                score++;
+
+                scoreElement.textContent =
+                    score;
+
+            }
+
+
+            /*
+            Remove old obstacles
+            */
+
+            if (
+                x <
+                -obstacle.offsetWidth
+            ) {
+
+                obstacle.remove();
 
             }
 
         }
+    );
 
 
-        /*
-            COLLISION
-        */
+    /*
+    Keep only active obstacles
+    */
+
+    obstacles =
+        obstacles.filter(
+            obstacle =>
+                obstacle.parentElement
+        );
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+}
+
+
+/* Tap / Touch Controls */
+
+game.addEventListener(
+    "pointerdown",
+    function(event) {
 
         if (
-            checkCollision(
-                player,
-                obstacle
-            )
+            event.target === startButton ||
+            event.target === restartButton
         ) {
-
-            endGame();
 
             return;
 
         }
 
+        jump();
 
-        /*
-            REMOVE OLD OBSTACLES
-        */
+    }
+);
+
+
+/* Keyboard Control */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
 
         if (
-            obstacle.x +
-            obstacle.width <
-            -50
+            event.code === "Space" ||
+            event.code === "ArrowUp"
         ) {
 
-            obstacles.splice(
-                i,
-                1
-            );
+            event.preventDefault();
+
+            jump();
 
         }
 
     }
+);
 
 
-    /*
-        PLAYER ROTATION
-    */
+/* Start Button */
 
-    player.rotation +=
-        player.velocityY *
-        0.015;
+startButton.addEventListener(
+    "click",
+    function(event) {
 
-}
+        event.stopPropagation();
+
+        startGame();
+
+    }
+);
 
 
-/* =========================
-   DRAW BACKGROUND
-========================= */
+/* Restart Button */
 
-function drawBackground() {
+restartButton.addEventListener(
+    "click",
+    function(event) {
 
-    /*
-        Sky
-    */
+        event.stopPropagation();
 
-    const sky =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            gameHeight
-        );
+        startGame();
 
-    sky.addColorStop(
+    }
+);
+
+
+/* Resize */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (gameRunning) {
+
+            const groundY =
+                game.clientHeight -
+                getGroundHeight() -
+                player.offsetHeight;
+
+            if (playerY > groundY) {
+
+                playerY =
+                    groundY;
+
+            }
+
+        }
+
+    }
+);
+
+
+/* Initial Position */
+
+resetPlayer();
+
+</script>
+
+</body>
+    </html>
